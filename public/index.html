@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>UFC Arbitrage Trader</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            padding: 15px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 22px;
+            margin-bottom: 15px;
+            text-align: center;
+            color: #00ff88;
+        }
+
+        .setup-section, .market-select, .trading-section {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid #333;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: #00ff88;
+            color: #0a0a0a;
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .btn-buy, .btn-sell {
+            font-size: 22px;
+            padding: 20px;
+            margin: 8px 0;
+            height: 80px;
+            /* Fire on pointerdown: suppress long-press menus, text selection,
+               and the browser's double-tap zoom delay on these buttons. */
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        .btn-buy {
+            background: #00ff88;
+            color: #0a0a0a;
+        }
+
+        .btn-sell {
+            background: #ff4444;
+            color: #fff;
+        }
+
+        .btn-buy:active {
+            transform: scale(0.95);
+            background: #00dd77;
+        }
+
+        .btn-sell:active {
+            transform: scale(0.95);
+            background: #dd3333;
+        }
+
+        .btn-buy:disabled, .btn-sell:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .fight-info {
+            text-align: center;
+            padding: 15px;
+            background: #0a0a0a;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .fight-info h2 {
+            font-size: 24px;
+            margin-bottom: 8px;
+            color: #00ff88;
+        }
+
+        .vs {
+            font-size: 18px;
+            color: #666;
+            margin: 8px 0;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+
+        .status.info { background: #1a3a5a; color: #66b3ff; }
+        .status.success { background: #1a4a1a; color: #00ff88; }
+        .status.error { background: #4a1a1a; color: #ff4444; }
+        .status.warning { background: #4a3a1a; color: #ffaa44; }
+
+        .market-item {
+            padding: 12px;
+            background: #0a0a0a;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            border: 2px solid #333;
+        }
+
+        .market-item:active {
+            border-color: #00ff88;
+        }
+
+        .market-item.selected {
+            border-color: #00ff88;
+            background: #0f1f0f;
+        }
+
+        .market-date {
+            color: #00ff88;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .market-fighters {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .order-info {
+            background: #0a0a0a;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .order-label { color: #aaa; }
+        .order-value { color: #00ff88; font-weight: bold; }
+
+        .quote-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .quote-card {
+            background: #0a0a0a;
+            border-radius: 8px;
+            padding: 10px;
+            border: 1px solid #333;
+        }
+
+        .quote-card h4 {
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: #00ff88;
+        }
+
+        .quote-line {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .quote-line span:first-child {
+            color: #aaa;
+        }
+
+        .helper-text {
+            color: #888;
+            font-size: 12px;
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+
+        .fighter-action-row {
+            display: grid;
+            grid-template-columns: 88px 1fr 1fr;
+            gap: 10px;
+            align-items: stretch;
+            margin-bottom: 10px;
+        }
+
+        .fighter-action-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #aaa;
+            padding: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚡ UFC Arbitrage Trader</h1>
+
+        <!-- Setup -->
+        <div id="setupSection" class="setup-section">
+            <div class="input-group">
+                <label>Key ID</label>
+                <input type="text" id="keyId" placeholder="Polymarket US Key ID" autocomplete="off" />
+            </div>
+            <div class="input-group">
+                <label>Secret Key</label>
+                <input type="password" id="secretKey" placeholder="Polymarket US Secret Key" autocomplete="off" />
+            </div>
+            <div class="input-group">
+                <label>Execution Mode</label>
+                <select id="executionMode" onchange="syncExecutionMode()">
+                    <option value="market">Market (USD notional)</option>
+                    <option value="limit">IOC Limit (shares + price)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label id="setupAmountLabel">Market Notional (USD)</label>
+                <input type="number" id="orderAmount" value="100" min="0.01" step="0.01" />
+                <div class="helper-text" id="setupAmountHelp">Market mode sends a USD notional for immediate execution.</div>
+            </div>
+            <div class="input-group hidden" id="setupLimitPriceGroup">
+                <label>Limit Price Per Share</label>
+                <input type="number" id="setupLimitPrice" value="0.70" min="0.01" max="0.99" step="0.001" />
+                <div class="helper-text">Use the fighter-side share price. Fighter 2 orders are converted to YES-side price automatically.</div>
+            </div>
+            <button class="btn-primary" onclick="initialize()">Connect & Load Markets</button>
+            <div id="setupStatus"></div>
+        </div>
+
+        <!-- Market Selection -->
+        <div id="marketSelect" class="market-select hidden">
+            <h3 style="margin-bottom: 12px; color: #00ff88; font-size: 18px;">Select Fight</h3>
+            <div id="marketList">Loading...</div>
+            <button class="btn-primary" onclick="prepareTrading()" style="margin-top: 12px;">Prepare Orders</button>
+        </div>
+
+        <!-- Trading Interface -->
+        <div id="tradingSection" class="trading-section hidden">
+            <div class="fight-info">
+                <h2 id="fighter1Name">Fighter 1</h2>
+                <div class="vs">VS</div>
+                <h2 id="fighter2Name">Fighter 2</h2>
+            </div>
+
+            <div class="order-info">
+                <span class="order-label">Selected Market:</span>
+                <span class="order-value" id="marketSlugLabel">-</span>
+            </div>
+
+            <div class="input-group">
+                <label>Execution Mode</label>
+                <select id="tradeExecutionMode" onchange="syncExecutionModeFromTrade()">
+                    <option value="market">Market (USD notional)</option>
+                    <option value="limit">IOC Limit (shares + price)</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label id="tradeAmountLabel">Market Notional (USD)</label>
+                <input type="number" id="tradeAmount" value="100" min="0.01" step="0.01" oninput="syncAmountFromTrade()" />
+                <div class="helper-text" id="tradeAmountHelp">Market mode uses USD notional for taker execution.</div>
+            </div>
+
+            <div class="input-group hidden" id="tradeLimitPriceGroup">
+                <label>Limit Price Per Share</label>
+                <input type="number" id="tradeLimitPrice" value="0.70" min="0.01" max="0.99" step="0.001" oninput="syncLimitPriceFromTrade()" />
+                <div class="helper-text">IOC Limit mode uses exact shares and your entered fighter-side share price.</div>
+            </div>
+
+            <div class="quote-grid">
+                <div class="quote-card">
+                    <h4 id="fighter1QuoteLabel">Fighter 1</h4>
+                    <div class="quote-line"><span>Buy</span><span id="fighter1BuyPx">-</span></div>
+                    <div class="quote-line"><span>Sell</span><span id="fighter1SellPx">-</span></div>
+                </div>
+                <div class="quote-card">
+                    <h4 id="fighter2QuoteLabel">Fighter 2</h4>
+                    <div class="quote-line"><span>Buy</span><span id="fighter2BuyPx">-</span></div>
+                    <div class="quote-line"><span>Sell</span><span id="fighter2SellPx">-</span></div>
+                </div>
+            </div>
+
+            <div class="order-info">
+                <span class="order-label">Live Quote:</span>
+                <span class="order-value" id="quoteTimestamp">Waiting...</span>
+            </div>
+
+            <div class="order-info">
+                <span class="order-label">Quote Feed:</span>
+                <span class="order-value" id="quoteFeedStatus">Not connected</span>
+            </div>
+
+            <div id="tradingStatus"></div>
+
+            <div class="fighter-action-row">
+                <div class="fighter-action-label" id="fighter1RowLabel">Fighter 1</div>
+                <button class="btn-buy" data-action="BUY_FIGHTER1" id="buyBtn1">
+                    BUY<br><span id="f1buy" style="font-size: 14px;">F1</span>
+                </button>
+                <button class="btn-sell" data-action="SELL_FIGHTER1" id="sellBtn1">
+                    SELL<br><span id="f1sell" style="font-size: 14px;">F1</span>
+                </button>
+            </div>
+
+            <div class="fighter-action-row">
+                <div class="fighter-action-label" id="fighter2RowLabel">Fighter 2</div>
+                <button class="btn-buy" data-action="BUY_FIGHTER2" id="buyBtn2">
+                    BUY<br><span id="f2buy" style="font-size: 14px;">F2</span>
+                </button>
+                <button class="btn-sell" data-action="SELL_FIGHTER2" id="sellBtn2">
+                    SELL<br><span id="f2sell" style="font-size: 14px;">F2</span>
+                </button>
+            </div>
+
+            <button class="btn-primary" onclick="resetApp()" style="margin-top: 15px; background: #444;">
+                Change Market
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+        
+        const state = {
+            sessionId: Math.random().toString(36).substr(2, 9),
+            markets: [],
+            selectedMarket: null,
+            executionMode: 'market',
+            marketNotional: 100,
+            limitQuantity: 100,
+            limitPrice: 0.70,
+            socket: null,
+            socketReady: false,
+            socketReconnectTimer: null,
+            socketReconnectAttempts: 0,
+            pendingOrders: new Map(),
+            orderInFlight: false,
+            activePointerId: null,
+            quoteFallbackHandle: null,
+            keepAliveHandle: null,
+            keepAliveInFlight: false,
+            quoteFeedMode: 'idle',
+            latestQuote: null
+        };
+
+        const ORDER_ACK_TIMEOUT_MS = 8000;
+        const SOCKET_CONNECT_GRACE_MS = 4000;
+        const SOCKET_RECONNECT_BASE_MS = 500;
+        const SOCKET_RECONNECT_MAX_MS = 5000;
+        const BUTTON_COOLDOWN_MS = 2000;
+
+        function showStatus(elementId, message, type = 'info') {
+            document.getElementById(elementId).innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function formatMoney(value) {
+            if (value === null || value === undefined || Number.isNaN(Number(value))) {
+                return '-';
+            }
+
+            return `$${Number(value).toFixed(3)}`;
+        }
+
+        function syncExecutionModeUI() {
+            const isMarketMode = state.executionMode === 'market';
+
+            document.getElementById('executionMode').value = state.executionMode;
+            document.getElementById('tradeExecutionMode').value = state.executionMode;
+            document.getElementById('setupAmountLabel').textContent = isMarketMode ? 'Market Notional (USD)' : 'Limit Quantity (Shares)';
+            document.getElementById('tradeAmountLabel').textContent = isMarketMode ? 'Market Notional (USD)' : 'Limit Quantity (Shares)';
+            document.getElementById('setupAmountHelp').textContent = isMarketMode
+                ? 'Market mode sends a USD notional for immediate execution.'
+                : 'IOC Limit mode sends exact shares.';
+            document.getElementById('tradeAmountHelp').textContent = isMarketMode
+                ? 'Market mode uses USD notional for taker execution.'
+                : 'IOC Limit mode uses exact shares and your entered fighter-side share price.';
+            document.getElementById('setupLimitPriceGroup').classList.toggle('hidden', isMarketMode);
+            document.getElementById('tradeLimitPriceGroup').classList.toggle('hidden', isMarketMode);
+            document.getElementById('orderAmount').value = isMarketMode ? state.marketNotional : state.limitQuantity;
+            document.getElementById('tradeAmount').value = isMarketMode ? state.marketNotional : state.limitQuantity;
+            document.getElementById('setupLimitPrice').value = state.limitPrice;
+            document.getElementById('tradeLimitPrice').value = state.limitPrice;
+        }
+
+        function syncExecutionMode() {
+            state.executionMode = document.getElementById('executionMode').value;
+            syncExecutionModeUI();
+        }
+
+        function syncExecutionModeFromTrade() {
+            state.executionMode = document.getElementById('tradeExecutionMode').value;
+            syncExecutionModeUI();
+        }
+
+        function syncAmountFromTrade() {
+            const value = document.getElementById('tradeAmount').value;
+            document.getElementById('orderAmount').value = value;
+
+            if (state.executionMode === 'market') {
+                state.marketNotional = parseFloat(value);
+            } else {
+                state.limitQuantity = parseFloat(value);
+            }
+        }
+
+        function syncLimitPriceFromTrade() {
+            const value = document.getElementById('tradeLimitPrice').value;
+            document.getElementById('setupLimitPrice').value = value;
+            state.limitPrice = parseFloat(value);
+        }
+
+        function normalizeQuote(rawQuote, slug) {
+            const yesBid = rawQuote?.bestBid?.value ?? rawQuote?.yesBid ?? null;
+            const yesAsk = rawQuote?.bestAsk?.value ?? rawQuote?.yesAsk ?? null;
+            const currentYes = rawQuote?.longQuote?.value ?? rawQuote?.currentPx?.value ?? rawQuote?.lastTradePx?.value ?? rawQuote?.currentYes ?? null;
+            const currentNo = rawQuote?.shortQuote?.value ?? rawQuote?.currentNo ?? (currentYes !== null ? 1 - Number(currentYes) : null);
+
+            return {
+                slug,
+                yesBid: yesBid !== null ? Number(yesBid) : null,
+                yesAsk: yesAsk !== null ? Number(yesAsk) : null,
+                noBid: yesAsk !== null ? 1 - Number(yesAsk) : null,
+                noAsk: yesBid !== null ? 1 - Number(yesBid) : null,
+                currentYes: currentYes !== null ? Number(currentYes) : null,
+                currentNo: currentNo !== null ? Number(currentNo) : null,
+                fetchedAt: rawQuote?.fetchedAt || Date.now(),
+                source: rawQuote?.source || 'unknown'
+            };
+        }
+
+        function setQuoteFeedStatus(message) {
+            document.getElementById('quoteFeedStatus').textContent = message;
+        }
+
+        function applyQuote(rawQuote) {
+            if (!state.selectedMarket) return;
+
+            state.latestQuote = normalizeQuote(rawQuote, rawQuote?.slug || state.selectedMarket.slug);
+            document.getElementById('fighter1BuyPx').textContent = formatMoney(state.latestQuote.yesAsk ?? state.latestQuote.currentYes);
+            document.getElementById('fighter1SellPx').textContent = formatMoney(state.latestQuote.yesBid ?? state.latestQuote.currentYes);
+            document.getElementById('fighter2BuyPx').textContent = formatMoney(state.latestQuote.noAsk ?? state.latestQuote.currentNo);
+            document.getElementById('fighter2SellPx').textContent = formatMoney(state.latestQuote.noBid ?? state.latestQuote.currentNo);
+            document.getElementById('quoteTimestamp').textContent = new Date(state.latestQuote.fetchedAt || Date.now()).toLocaleTimeString();
+
+            if (state.latestQuote.source === 'bridge') {
+                state.quoteFeedMode = 'bridge';
+                setQuoteFeedStatus(state.socketReady ? 'Socket live · bridge streaming' : 'Bridge streaming');
+            } else if (state.quoteFeedMode === 'bridge') {
+                setQuoteFeedStatus('Bridge connected; seed quote shown');
+            } else if (state.quoteFeedMode === 'fallback') {
+                setQuoteFeedStatus('HTTP fallback polling');
+            } else {
+                setQuoteFeedStatus('Bridge connecting; seed quote shown');
+            }
+
+            if (!state.orderInFlight) {
+                showStatus('tradingStatus', '⚡ Live quote ready. Tap immediately when the moment happens.', 'success');
+            }
+        }
+
+        function stopQuoteFeed() {
+            if (state.socketReconnectTimer) {
+                clearTimeout(state.socketReconnectTimer);
+                state.socketReconnectTimer = null;
+            }
+
+            if (state.socket) {
+                const socket = state.socket;
+                state.socket = null;
+                state.socketReady = false;
+                socket.onclose = null;
+                socket.close();
+            }
+
+            if (state.quoteFallbackHandle) {
+                clearInterval(state.quoteFallbackHandle);
+                state.quoteFallbackHandle = null;
+            }
+        }
+
+        function socketIsOpen() {
+            return Boolean(state.socket && state.socketReady && state.socket.readyState === WebSocket.OPEN);
+        }
+
+        function failPendingOrders(message) {
+            for (const [id, pending] of state.pendingOrders) {
+                clearTimeout(pending.timer);
+                pending.reject(new Error(message));
+                state.pendingOrders.delete(id);
+            }
+        }
+
+        function handleSocketMessage(message) {
+            switch (message.type) {
+                case 'quote':
+                    if (state.quoteFallbackHandle) {
+                        clearInterval(state.quoteFallbackHandle);
+                        state.quoteFallbackHandle = null;
+                    }
+                    applyQuote(message);
+                    return;
+
+                case 'status':
+                    if (message.message === 'Live bridge connected.') {
+                        state.quoteFeedMode = 'bridge';
+                        setQuoteFeedStatus('Socket live · waiting for price update');
+                        return;
+                    }
+                    if (message.message) setQuoteFeedStatus(message.message);
+                    if (message.level === 'warning' || message.level === 'error') {
+                        showStatus('tradingStatus', message.message, message.level === 'error' ? 'error' : 'warning');
+                    }
+                    return;
+
+                case 'order_result': {
+                    const pending = state.pendingOrders.get(message.id);
+                    if (!pending) return;
+                    clearTimeout(pending.timer);
+                    state.pendingOrders.delete(message.id);
+                    pending.resolve(message);
+                    return;
+                }
+
+                case 'keepalive':
+                    state.keepAliveInFlight = false;
+                    if (!message.success) console.warn('Keepalive failed:', message.error);
+                    return;
+
+                case 'error':
+                    showStatus('tradingStatus', message.message, 'error');
+                    return;
+
+                default:
+                    return;
+            }
+        }
+
+        function scheduleSocketReconnect() {
+            if (state.socketReconnectTimer || !state.selectedMarket) return;
+
+            const attempt = state.socketReconnectAttempts++;
+            const delay = Math.min(SOCKET_RECONNECT_MAX_MS, SOCKET_RECONNECT_BASE_MS * Math.pow(2, attempt));
+
+            state.socketReconnectTimer = setTimeout(() => {
+                state.socketReconnectTimer = null;
+                connectSocket();
+            }, delay);
+        }
+
+        function connectSocket() {
+            if (!state.selectedMarket) return;
+            if (state.socket && (state.socket.readyState === WebSocket.OPEN || state.socket.readyState === WebSocket.CONNECTING)) return;
+
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const socket = new WebSocket(`${protocol}//${window.location.host}/ws?sessionId=${encodeURIComponent(state.sessionId)}`);
+            state.socket = socket;
+            state.socketReady = false;
+            setQuoteFeedStatus('Connecting socket...');
+
+            const graceTimer = setTimeout(() => {
+                if (state.socket === socket && !state.socketReady) {
+                    showStatus('tradingStatus', 'Socket slow to connect, falling back to HTTP quotes...', 'warning');
+                    startQuoteFallbackPolling();
+                }
+            }, SOCKET_CONNECT_GRACE_MS);
+
+            socket.onopen = () => {
+                if (state.socket !== socket) return;
+                clearTimeout(graceTimer);
+                state.socketReady = true;
+                state.socketReconnectAttempts = 0;
+                socket.send(JSON.stringify({ type: 'subscribe', slug: state.selectedMarket.slug }));
+                setQuoteFeedStatus('Socket live · opening bridge');
+            };
+
+            socket.onmessage = (event) => {
+                if (state.socket !== socket) return;
+                try {
+                    handleSocketMessage(JSON.parse(event.data));
+                } catch (error) {
+                    console.warn('Bad socket message:', error.message);
+                }
+            };
+
+            socket.onerror = () => {
+                if (state.socket !== socket) return;
+                console.warn('Socket error');
+            };
+
+            socket.onclose = (event) => {
+                if (state.socket !== socket) return;
+                clearTimeout(graceTimer);
+                state.socket = null;
+                state.socketReady = false;
+                state.keepAliveInFlight = false;
+
+                // Never auto-retry an order after a drop: it may already be on the book.
+                failPendingOrders('Connection dropped after send. Check open orders before retrying.');
+
+                if (event.code === 4401) {
+                    showStatus('tradingStatus', 'Session expired. Reconnect with your API keys.', 'error');
+                    setQuoteFeedStatus('Session expired');
+                    return;
+                }
+
+                setQuoteFeedStatus('Socket reconnecting...');
+                startQuoteFallbackPolling();
+                scheduleSocketReconnect();
+            };
+        }
+
+        async function sendKeepAlive() {
+            if (state.keepAliveInFlight) return;
+            state.keepAliveInFlight = true;
+
+            if (socketIsOpen()) {
+                state.socket.send(JSON.stringify({ type: 'keepalive' }));
+                setTimeout(() => { state.keepAliveInFlight = false; }, 10000);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/keepalive`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sessionId: state.sessionId })
+                });
+
+                if (!response.ok) {
+                    const data = await response.json().catch(() => ({}));
+                    throw new Error(data.error || 'Keepalive failed');
+                }
+            } catch (error) {
+                console.warn('Keepalive failed:', error.message);
+            } finally {
+                state.keepAliveInFlight = false;
+            }
+        }
+
+        function startTradingKeepAlive() {
+            if (state.keepAliveHandle) return;
+
+            sendKeepAlive();
+            state.keepAliveHandle = setInterval(sendKeepAlive, 25000);
+        }
+
+        function stopTradingKeepAlive() {
+            if (state.keepAliveHandle) {
+                clearInterval(state.keepAliveHandle);
+                state.keepAliveHandle = null;
+            }
+        }
+
+        function startQuoteFallbackPolling() {
+            if (state.quoteFallbackHandle || !state.selectedMarket) return;
+            state.quoteFeedMode = 'fallback';
+            setQuoteFeedStatus('HTTP fallback polling');
+            refreshQuote();
+            state.quoteFallbackHandle = setInterval(refreshQuote, 1000);
+        }
+
+        function startQuoteStream() {
+            if (!state.selectedMarket) return;
+
+            stopQuoteFeed();
+            showStatus('tradingStatus', 'Opening live quote socket...', 'info');
+            state.quoteFeedMode = 'connecting';
+            state.socketReconnectAttempts = 0;
+            connectSocket();
+        }
+
+        async function initialize() {
+            try {
+                const keyId = document.getElementById('keyId').value.trim();
+                const secretKey = document.getElementById('secretKey').value.trim();
+                const orderAmount = parseFloat(document.getElementById('orderAmount').value);
+                const limitPrice = parseFloat(document.getElementById('setupLimitPrice').value);
+
+                if (!keyId || !secretKey) {
+                    showStatus('setupStatus', 'Enter your Polymarket US Key ID and Secret Key', 'error');
+                    return;
+                }
+
+                if (!Number.isFinite(orderAmount) || orderAmount <= 0) {
+                    showStatus('setupStatus', 'Enter an order amount greater than zero', 'error');
+                    return;
+                }
+
+                if (state.executionMode === 'market') {
+                    state.marketNotional = orderAmount;
+                } else {
+                    state.limitQuantity = orderAmount;
+                    if (!Number.isFinite(limitPrice) || limitPrice <= 0 || limitPrice >= 1) {
+                        showStatus('setupStatus', 'Enter a limit price between 0.01 and 0.99', 'error');
+                        return;
+                    }
+                    state.limitPrice = limitPrice;
+                }
+                showStatus('setupStatus', 'Connecting...', 'info');
+
+                const response = await fetch(`${API_URL}/api/init`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ keyId, secretKey, sessionId: state.sessionId })
+                });
+
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.error);
+                }
+
+                showStatus('setupStatus', `Connected: ${data.account}`, 'success');
+                
+                await loadMarkets();
+
+                document.getElementById('setupSection').classList.add('hidden');
+                document.getElementById('marketSelect').classList.remove('hidden');
+
+            } catch (error) {
+                showStatus('setupStatus', `Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadMarkets() {
+            try {
+                const response = await fetch(`${API_URL}/api/markets`);
+                const data = await response.json();
+
+                if (!data.success) throw new Error(data.error);
+
+                state.markets = data.markets || [];
+
+                if (state.markets.length === 0) {
+                    document.getElementById('marketList').innerHTML = '<div class="status error">No UFC markets found</div>';
+                    return;
+                }
+
+                displayMarkets(state.markets);
+
+            } catch (error) {
+                document.getElementById('marketList').innerHTML = `<div class="status error">${error.message}</div>`;
+            }
+        }
+
+        function displayMarkets(markets) {
+            const container = document.getElementById('marketList');
+            container.innerHTML = markets.map((m, i) => `
+                <div class="market-item" onclick="selectMarket(${i})">
+                    <div class="market-date">${m.startDate ? new Date(m.startDate).toLocaleString() : 'Start time unavailable'}</div>
+                    <div class="market-fighters">${m.title}</div>
+                </div>
+            `).join('');
+        }
+
+        function selectMarket(index) {
+            document.querySelectorAll('.market-item').forEach(el => el.classList.remove('selected'));
+            state.selectedMarket = state.markets[index];
+            document.querySelectorAll('.market-item')[index].classList.add('selected');
+        }
+
+        function prepareTrading() {
+            if (!state.selectedMarket) {
+                alert('Select a fight first');
+                return;
+            }
+
+            document.getElementById('marketSelect').classList.add('hidden');
+            document.getElementById('tradingSection').classList.remove('hidden');
+
+            const fighters = [
+                state.selectedMarket.longLabel || extractFighters(state.selectedMarket.title)[0],
+                state.selectedMarket.shortLabel || extractFighters(state.selectedMarket.title)[1]
+            ];
+
+            document.getElementById('fighter1Name').textContent = fighters[0];
+            document.getElementById('fighter2Name').textContent = fighters[1];
+            document.getElementById('fighter1QuoteLabel').textContent = fighters[0];
+            document.getElementById('fighter2QuoteLabel').textContent = fighters[1];
+            
+            const short1 = fighters[0].split(' ').pop();
+            const short2 = fighters[1].split(' ').pop();
+            
+            document.getElementById('f1buy').textContent = short1;
+            document.getElementById('f2buy').textContent = short2;
+            document.getElementById('f1sell').textContent = short1;
+            document.getElementById('f2sell').textContent = short2;
+            document.getElementById('fighter1RowLabel').textContent = short1;
+            document.getElementById('fighter2RowLabel').textContent = short2;
+            document.getElementById('marketSlugLabel').textContent = state.selectedMarket.slug;
+            syncExecutionModeUI();
+
+            showStatus('tradingStatus', 'Loading live quote...', 'info');
+            setQuoteFeedStatus('Connecting bridge...');
+            startQuoteStream();
+            startTradingKeepAlive();
+        }
+
+        function extractFighters(title) {
+            const cleanedTitle = (title || '')
+                .replace(/\s*\([^)]*\)\s*$/, '')
+                .replace('?', '')
+                .trim();
+
+            const match = cleanedTitle.match(/(.+?)\s+vs\.?\s+(.+)/i);
+            if (match) {
+                return [match[1].trim(), match[2].trim()];
+            }
+            return ['Fighter 1', 'Fighter 2'];
+        }
+
+        async function refreshQuote() {
+            if (!state.selectedMarket) return;
+
+            try {
+                const response = await fetch(`${API_URL}/api/quote?slug=${encodeURIComponent(state.selectedMarket.slug)}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || data.message || 'Quote request failed');
+                }
+
+                applyQuote(data.quote || data.marketData || data);
+            } catch (error) {
+                if (!state.latestQuote) {
+                    document.getElementById('quoteTimestamp').textContent = 'Quote unavailable';
+                }
+                showStatus('tradingStatus', `Quote error: ${error.message}`, 'warning');
+            }
+        }
+
+        function buildOrderRequest(action) {
+            return {
+                marketSlug: state.selectedMarket.slug,
+                action,
+                executionMode: state.executionMode,
+                notionalDollars: state.marketNotional,
+                quantity: state.limitQuantity,
+                limitPrice: state.limitPrice,
+                marketTickSize: state.selectedMarket.tickSize,
+                marketMinTradeQty: state.selectedMarket.minTradeQty,
+                quote: state.latestQuote
+            };
+        }
+
+        function sendOrderOverSocket(orderRequest) {
+            return new Promise((resolve, reject) => {
+                const id = `o-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+                const timer = setTimeout(() => {
+                    state.pendingOrders.delete(id);
+                    reject(new Error('No acknowledgement within 8s. Check open orders before retrying.'));
+                }, ORDER_ACK_TIMEOUT_MS);
+
+                state.pendingOrders.set(id, { resolve, reject, timer });
+                state.socket.send(JSON.stringify({ type: 'order', id, ...orderRequest }));
+            });
+        }
+
+        async function sendOrderOverHttp(orderRequest) {
+            const response = await fetch(`${API_URL}/api/order`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sessionId: state.sessionId, ...orderRequest })
+            });
+
+            return response.json();
+        }
+
+        async function executeTrade(action) {
+            if (state.orderInFlight) return;
+            state.orderInFlight = true;
+            const tappedAt = performance.now();
+
+            try {
+                setButtonsEnabled(false);
+                syncAmountFromTrade();
+                syncLimitPriceFromTrade();
+
+                if (state.executionMode === 'limit' && (!Number.isFinite(state.limitPrice) || state.limitPrice <= 0 || state.limitPrice >= 1)) {
+                    throw new Error('Enter a limit price between 0.01 and 0.99');
+                }
+
+                const orderRequest = buildOrderRequest(action);
+                const viaSocket = socketIsOpen();
+
+                showStatus('tradingStatus', viaSocket ? '⏳ Order sent on socket...' : '⏳ Order submitting (HTTP)...', 'warning');
+
+                const data = viaSocket
+                    ? await sendOrderOverSocket(orderRequest)
+                    : await sendOrderOverHttp(orderRequest);
+
+                const roundTripMs = Math.round(performance.now() - tappedAt);
+
+                if (data.success) {
+                    const amountLabel = state.executionMode === 'market'
+                        ? `$${state.marketNotional.toFixed(2)}`
+                        : `${state.limitQuantity.toFixed(2)} shares @ ${formatMoney(state.limitPrice)}`;
+                    const path = viaSocket ? 'ws' : 'http';
+
+                    showStatus(
+                        'tradingStatus',
+                        data.mode === 'market'
+                            ? `✅ Market order sent. ${amountLabel}, est ${data.quantity?.toFixed(4)} shares, ref ${formatMoney(data.referenceSidePrice)}. ${roundTripMs}ms ${path}.`
+                            : `✅ IOC limit sent. ${amountLabel}, ${data.quantity?.toFixed(4)} shares, ref ${formatMoney(data.referenceSidePrice)}, cap ${formatMoney(data.limitSidePrice)}. ${roundTripMs}ms ${path}.`,
+                        'success'
+                    );
+                } else {
+                    showStatus('tradingStatus', `❌ ${data.error}`, 'error');
+                }
+
+            } catch (error) {
+                showStatus('tradingStatus', `❌ ${error.message}`, 'error');
+            } finally {
+                state.orderInFlight = false;
+                setTimeout(() => {
+                    // A finger still held past the cooldown can't fire pointerdown
+                    // again, so releasing the guard here is safe and protects
+                    // against a pointerup the OS swallowed (call, app switch).
+                    state.activePointerId = null;
+                    setButtonsEnabled(true);
+                }, BUTTON_COOLDOWN_MS);
+            }
+        }
+
+        // Fire on pointerdown (finger contact) rather than click (finger lift).
+        // Anti-spam: exactly one order per physical press. A held finger never
+        // repeats, a second finger while one is down is ignored, synthesized
+        // click events do nothing, and the in-flight flag plus the disabled
+        // cooldown gate re-entry until the previous order is acknowledged.
+        function bindTradeButtons() {
+            const releasePointer = (event) => {
+                if (event.pointerId === state.activePointerId) {
+                    state.activePointerId = null;
+                }
+            };
+
+            window.addEventListener('pointerup', releasePointer, true);
+            window.addEventListener('pointercancel', releasePointer, true);
+            window.addEventListener('blur', () => { state.activePointerId = null; });
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden') state.activePointerId = null;
+            });
+
+            document.querySelectorAll('button[data-action]').forEach((button) => {
+                button.addEventListener('pointerdown', (event) => {
+                    if (!event.isPrimary || event.button !== 0) return;
+                    if (button.disabled || state.orderInFlight) return;
+                    if (state.activePointerId !== null) return;
+
+                    state.activePointerId = event.pointerId;
+                    event.preventDefault();
+                    executeTrade(button.dataset.action);
+                });
+
+                button.addEventListener('contextmenu', (event) => event.preventDefault());
+                // Keyboard auto-repeat (Enter/Space held) would spam via click; block it.
+                button.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') event.preventDefault();
+                });
+            });
+        }
+
+        function setButtonsEnabled(enabled) {
+            ['buyBtn1', 'buyBtn2', 'sellBtn1', 'sellBtn2'].forEach(id => {
+                document.getElementById(id).disabled = !enabled;
+            });
+        }
+
+        function resetApp() {
+            stopQuoteFeed();
+            stopTradingKeepAlive();
+            failPendingOrders('Market changed while an order was pending. Check open orders.');
+            state.latestQuote = null;
+            state.quoteFeedMode = 'idle';
+            setQuoteFeedStatus('Not connected');
+            document.getElementById('tradingSection').classList.add('hidden');
+            document.getElementById('marketSelect').classList.remove('hidden');
+        }
+
+        window.addEventListener('beforeunload', (e) => {
+            if (!document.getElementById('tradingSection').classList.contains('hidden')) {
+                stopQuoteFeed();
+                stopTradingKeepAlive();
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        syncExecutionModeUI();
+        bindTradeButtons();
+    </script>
+</body>
+</html>
