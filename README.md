@@ -1,10 +1,10 @@
 # UFC Arbitrage Trader - Deployment Guide
 
-## 🚀 Quick Start
+##  Quick Start
 
 This app lets you execute ultra-fast trades on Polymarket UFC markets when you're at the event.
 
-## 📱 How to Use on Your Phone
+##  How to Use on Your Phone
 
 ### Option 1: Deploy to Render (FREE & FASTEST - RECOMMENDED)
 
@@ -106,34 +106,15 @@ It uses Ed25519 API keys, not a wallet private key.
 
 3. **Confirmation**
    - You'll see "Order placed!" with order ID
-   - Order goes through 3-second matching delay (everyone has this)
-   - Fills at best available price
+   - Auto fills at best price
 
-## ⚡ Speed Optimization Tips
+## Speed Optimization Tips
 
-1. **Connection**: Use 5G UWB at Prudential Center (you confirmed it has this)
+1. **Connection**: Use 5G UWB
 2. **Battery**: Disable low power mode
-3. **Screen**: Keep brightness up so you don't need to unlock
-4. **Position**: Keep thumb ready on button
-5. **Testing**: Test with small amounts first!
 
-## 🎯 Strategy Execution
 
-**Your Timeline:**
-- T+0.0s: Knockout happens (you see it live)
-- T+0.2s: You tap button
-- T+0.3s: Pre-signed order submits
-- T+3.3s: Matching completes (3-second delay for all)
-
-**Their Timeline (streaming viewers):**
-- T+0.0s: Knockout happens
-- T+5-10s: They see it (broadcast delay)
-- T+5.3s+: They submit order
-- T+8.3s+: Matching completes
-
-**You have ~5-7 second edge**
-
-## 🔧 Troubleshooting
+## Troubleshooting
 
 **"Session not found"**
 - Reconnect by entering your API keys again
@@ -173,36 +154,11 @@ ufc-arbitrage-app/
 1. **Secret Key**: Never commit to GitHub, never share. Revoke compromised keys at
    https://polymarket.us/developer
 2. **HTTPS**: Always use HTTPS in production (Render/Vercel do this automatically)
-3. **Test First**: Start with small amounts
+3. **Test First**: Start with small amounts 
 4. **Session Management**: The Secret Key is only stored in memory during the session
 
-## 💡 Pro Tips
 
-1. **Pre-Event Testing**:
-   - Test the entire flow before the event
-   - Make sure you can connect and select markets
-   - Test with a small bet first
-
-2. **At the Arena**:
-   - Arrive early to set up
-   - Test your 5G connection in your seat
-   - Have the app loaded and ready before fights start
-   - Keep phone charged (bring portable charger)
-
-3. **Execution**:
-   - React instantly when you see the knockout
-   - Don't second-guess - tap immediately
-   - The 3-second matching delay gives you time
-
-## 📊 Understanding the 3-Second Delay
-
-Polymarket has a 3-second delay on all "marketable orders" (market orders) before they match. This means:
-
-- **Everyone experiences this delay** (you + remote traders)
-- Your edge is seeing the knockout 5-7 seconds before streaming viewers
-- Even with the delay, you're still way ahead
-
-## 🎓 Advanced: If You Want to Modify
+## Advanced (If You Want to Modify)
 
 The frontend (`public/index.html`) and backend (`server.js`) are separate:
 
@@ -219,7 +175,7 @@ If you run into issues:
 3. Make sure your Key ID and Secret Key are correct
 4. Verify you have funds in your Polymarket US account
 
-## ⚠️ Legal Disclaimer
+## Legal Disclaimer
 
 This tool is for educational purposes. Make sure you:
 - Understand the risks of prediction markets
@@ -227,7 +183,7 @@ This tool is for educational purposes. Make sure you:
 - Comply with all local laws and regulations
 - Are not in a restricted jurisdiction
 
-## 🚀 Ready to Deploy?
+## To Deploy: 
 
 **Fastest Path:**
 1. Create Render account
